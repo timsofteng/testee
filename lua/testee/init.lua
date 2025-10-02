@@ -1,7 +1,3 @@
-function T.foo()
-	vim.notify("Hello, World!", vim.log.levels.INFO)
-end
-
 ---@class Cfg
 ---@field output "terminal" | "tmux"
 
