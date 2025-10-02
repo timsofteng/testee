@@ -47,8 +47,8 @@ local function get_go_runner(path)
 	--- @type TestCmd
 	local cmd = {
 		project = "go test ./... -json",
-		file = "go test ./" .. path .. " -json",
-		unit = "go test ./" .. go_get_unit_ctx() .. " -json",
+		file = "go test " .. path .. " -json",
+		unit = "go test " .. go_get_unit_ctx() .. " -json",
 	}
 
 	--- @type Runner
