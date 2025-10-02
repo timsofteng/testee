@@ -1,5 +1,3 @@
-local T = {}
-
 function T.foo()
 	vim.notify("Hello, World!", vim.log.levels.INFO)
 end
@@ -7,10 +5,10 @@ end
 ---@class Cfg
 ---@field output "terminal" | "tmux"
 
----@type Cfg
-local cfg = {
-	output = "terminal",
-}
+------@type Cfg
+---local cfg = {
+---	output = "terminal",
+---}
 
 ---@alias VisualOutputFunc fun(cmd: string)
 
@@ -24,7 +22,7 @@ local visual_output = {
 		vim.cmd("terminal " .. cmd)
 		vim.cmd("startinsert")
 	end,
-	tmux = function(cmd)
+	tmux = function(_)
 		-- TODO add code
 	end,
 }
