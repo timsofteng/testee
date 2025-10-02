@@ -6,7 +6,14 @@
 ---	output = "terminal",
 ---}
 
+---@class Issue
+---@field msg string
+---@field path string
+---@field lineno number
+---@field test_name string
+
 ---@alias VisualOutputFunc fun(cmd: string)
+---@alias ParserFunc fun(out: string):Issue[]
 
 ---@class VisualOutput
 ---@field terminal VisualOutputFunc
@@ -31,16 +38,10 @@ local visual_output = {
 -- test of function or subtest of function
 ---@field unit string[]
 
----@class Issue
----@field msg string
----@field path string
----@field lineno number
----@field test_name string
-
 ---@class Runner
 ---@field cmd TestCmd
 ---@field visualCmd TestCmd
----@field parser fun(str:string):TestCmd
+---@field parser ParserFunc
 
 ---@return string
 local function go_get_unit_ctx()
@@ -121,10 +122,33 @@ local function get_runner(ft, file_path)
 	return langs[ft]
 end
 
+local function add_to_qf(issues)
+	local qf_list = {}
+	for _, issue in ipairs(issues) do
+		table.insert(qf_list, {
+			filename = issue.path,
+			lnum = issue.lineno,
+			text = issue.msg .. " (" .. issue.test_name .. ")",
+			type = "E",
+		})
+	end
+
+	vim.fn.setqflist(qf_list, "r")
+
+	vim.cmd("copen")
+end
+
 ---@param out vim.SystemCompleted
-local function handle_output(out)
+---@param out_method "quickfix"
+---@param parser ParserFunc
+local function handle_output(out, out_method, parser)
 	if out.code == 0 then
-		print("Успех! Вывод команды:\n" .. (out.stdout or "пусто"))
+		vim.notify("All tests success", vim.log.levels.INFO)
+		return
+	else
+		vim.notify("Errors", vim.log.levels.ERROR)
+		local issues = parser(out.stderr)
+		add_to_qf(issues)
 	end
 end
 
