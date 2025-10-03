@@ -6,7 +6,7 @@ end
 
 ---@param json_lines string
 ---@return Issue[]
-local function go_parser(json_lines)
+local function parser(json_lines)
 	local issues_map = {}
 	for line in json_lines do
 		local ok, obj = pcall(vim.json.decode, line)
@@ -40,6 +40,22 @@ local function go_parser(json_lines)
 	return issues_array
 end
 
+---@param json_lines string
+---@return Issue[]
+local function visual_parser(json_lines)
+	for line in json_lines do
+		local ok, obj = pcall(vim.json.decode, line)
+		if not ok then
+			goto continue
+		end
+
+		local test_name = obj.Output
+		::continue::
+	end
+
+	return issues_array
+end
+
 --- @param path string
 --- @return Runner
 local function runner(path)
@@ -50,20 +66,14 @@ local function runner(path)
 		unit = { "go", "test", go_get_unit_ctx(), "-json" },
 	}
 
-	local visualCmd = {
-		project = { "go", "test", "./..." },
-		file = { "go", "test", path },
-		unit = { "go", "test", go_get_unit_ctx() },
-	}
-
 	--- @type Runner
-	local runner = {
+	local r = {
 		cmd = cmd,
-		visualCmd = visualCmd,
-		parser = go_parser,
+		parser = parser,
+		visual_parser = visual_parser,
 	}
 
-	return runner
+	return r
 end
 
 return {

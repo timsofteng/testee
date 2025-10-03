@@ -9,7 +9,7 @@
 ---@field tmux VisualOutputFunc
 
 ---@type VisualOutput
-local visual_output = {
+local visual_writer = {
 	terminal = function(cmd)
 		local strCmd = table.concat(cmd, " ")
 		vim.cmd("terminal " .. strCmd)
@@ -71,7 +71,8 @@ local function main(method)
 
 	local runner = get_runner(ft, file_path)
 	local cmd = runner.cmd[method]
-	local visualCmd = runner.visualCmd[method]
+	local parser = runner.parser
+	local visual_parser = runner.visual_parser
 
 	vim.system(cmd, { text = true }, handle_output)
 

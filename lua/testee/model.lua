@@ -6,8 +6,8 @@
 
 ---@class Runner
 ---@field cmd TestCmd
----@field visualCmd TestCmd
 ---@field parser ParserFunc
+---@field visual_parser ParserFunc
 
 ---@class TestCmd
 ---@field project string[]
