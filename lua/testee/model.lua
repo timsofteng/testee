@@ -16,3 +16,15 @@
 ---@field file string[]
 -- test of function or subtest of function
 ---@field unit string[]
+
+---@alias ErrorsHub "quickfix"
+
+---@alias TestScope "project" | "file" | "unit"
+
+---@alias ParserFunc fun(out: string):Issue[]
+
+---@alias VisualOutputFunc fun(cmd: string[])
+
+---@class VisualOutput
+---@field terminal VisualOutputFunc
+---@field tmux VisualOutputFunc

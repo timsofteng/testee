@@ -1,13 +1,4 @@
----@class Cfg
----@field output "terminal" | "tmux"
-
----@alias VisualOutputFunc fun(cmd: string[])
----@alias ParserFunc fun(out: string):Issue[]
-
----@class VisualOutput
----@field terminal VisualOutputFunc
----@field tmux VisualOutputFunc
-
+local go = require("go")
 ---@type VisualOutput
 local visual_writer = {
 	terminal = function(cmd)
@@ -20,18 +11,8 @@ local visual_writer = {
 	end,
 }
 
----@param ft string
----@param file_path string
----@return Runner
-local function get_runner(ft, file_path)
-	local langs = {
-		go = require("go").runner(file_path),
-	}
-
-	return langs[ft]
-end
-
-local function add_to_qf(issues)
+---@param issues Issue[]
+local function add_issues_to_qf(issues)
 	local qf_list = {}
 	for _, issue in ipairs(issues) do
 		table.insert(qf_list, {
@@ -47,24 +28,31 @@ local function add_to_qf(issues)
 	vim.cmd("copen")
 end
 
----@param out vim.SystemCompleted
----@param out_method "quickfix"
----@param parser ParserFunc
-local function handle_output(out, out_method, parser)
-	if out.code == 0 then
-		vim.notify("All tests success", vim.log.levels.INFO)
-		return
-	else
-		vim.notify("Errors", vim.log.levels.ERROR)
-		local issues = parser(out.stderr)
-
-		if out_method == "quickfix" then
-			add_to_qf(issues)
+local function handle_test(proccess_hidden, proccess_visual)
+	return function(out)
+		if out.code == 0 then
+			vim.notify("All tests success", vim.log.levels.INFO)
+			return
+		else
+			vim.notify("Errors", vim.log.levels.ERROR)
+			proccess_hidden(out.stderr)
+			proccess_visual(out.stderr)
 		end
 	end
 end
 
----@param method "project" | "file" | "unit"
+---@param filetype string
+---@param filepath string
+---@return Runner
+local function get_runner(filetype, filepath)
+	local langs = {
+		go = require("go").runner(filepath),
+	}
+
+	return langs[filetype]
+end
+
+---@param method  TestScope
 local function main(method)
 	local ft = vim.bo.filetype
 	local file_path = vim.fn.expand("%:p")
@@ -74,10 +62,12 @@ local function main(method)
 	local parser = runner.parser
 	local visual_parser = runner.visual_parser
 
-	vim.system(cmd, { text = true }, handle_output)
+	vim.system(cmd, { text = true }, handle_test)
 
-	visual_output.terminal(visualCmd)
+	visual_writer.terminal(visualCmd)
 end
+
+main("file")
 
 return {
 	main = main,

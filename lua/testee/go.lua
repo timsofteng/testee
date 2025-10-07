@@ -1,12 +1,6 @@
----@return string
-local function go_get_unit_ctx()
-	-- TODO add treesitter
-	return "test"
-end
-
 ---@param json_lines string
 ---@return Issue[]
-local function parser(json_lines)
+local function stderr_to_issues(json_lines)
 	local issues_map = {}
 	for line in json_lines do
 		local ok, obj = pcall(vim.json.decode, line)
@@ -40,9 +34,7 @@ local function parser(json_lines)
 	return issues_array
 end
 
----@param json_lines string
----@return Issue[]
-local function visual_parser(json_lines)
+local function stderr_to_view(json_lines)
 	for line in json_lines do
 		local ok, obj = pcall(vim.json.decode, line)
 		if not ok then
@@ -63,14 +55,14 @@ local function runner(path)
 	local cmd = {
 		project = { "go", "test", "./...", "-json" },
 		file = { "go", "test", path, "-json" },
-		unit = { "go", "test", go_get_unit_ctx(), "-json" },
+		unit = { "go", "test", "-json" },
 	}
 
 	--- @type Runner
 	local r = {
 		cmd = cmd,
-		parser = parser,
-		visual_parser = visual_parser,
+		parser = stderr_to_issues,
+		visual_parser = stderr_to_view,
 	}
 
 	return r
